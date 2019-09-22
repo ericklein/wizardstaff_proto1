@@ -9,8 +9,10 @@
 // Library initialization
 #include <FastLED.h>
 #include "LEDControl.h"
-#include <Wire.h>
-#include <Adafruit_Sensor.h>
+//#include <Wire.h>
+//#include <Adafruit_Sensor.h>
+//#include <Adafruit_ADXL343.h>
+#include <SparkFun_ADXL345.h>
 
 // Conditional code definitions
 #define stripLPD8806
@@ -45,9 +47,13 @@ CRGB ledsOne[NUM_LEDS];
 //CRGB ledsTwo[NUM_LEDS]; // for p2, 4 strips
 
 // Instantiate led strips
+LEDControl stripOne(ledStrip0DataPin, NUM_LEDS,ledsOne); // Pin isn't used in library, checking with David on this 
 //LEDControl stripTwo(DATA_PIN_2,NUM_LEDS,ledsTwo); //for p2, 4 strips
 
-// Instantiate accelerometer
+// Instantiate accelerometer via i2c
+// Adafruit_ADXL343 accel = Adafruit_ADXL343(12345);
+ADXL345 adxl = ADXL345();
+
 
 void setup() 
 {
@@ -75,7 +81,7 @@ void setup()
    Serial.println("LED strip(s) initalized");
   #endif
 
-  // initiate accelerometer
+  /* // initiate accelerometer
   if(!accel.begin())
   {
     // There was a problem detecting the ADXL345
@@ -91,6 +97,47 @@ void setup()
   // accel.setRange(ADXL345_RANGE_4_G);
   // accel.setRange(ADXL345_RANGE_2_G);
 
+  */
+
+  adxl.powerOn();                     // Power on the ADXL345
+
+  adxl.setRangeSetting(16);           // Give the range settings
+                                      // Accepted values are 2g, 4g, 8g or 16g
+                                      // Higher Values = Wider Measurement Range
+                                      // Lower Values = Greater Sensitivity
+ 
+  adxl.setActivityXYZ(1, 0, 0);       // Set to activate movement detection in the axes "adxl.setActivityXYZ(X, Y, Z);" (1 == ON, 0 == OFF)
+  adxl.setActivityThreshold(75);      // 62.5mg per increment   // Set activity   // Inactivity thresholds (0-255)
+ 
+  adxl.setInactivityXYZ(1, 0, 0);     // Set to detect inactivity in all the axes "adxl.setInactivityXYZ(X, Y, Z);" (1 == ON, 0 == OFF)
+  adxl.setInactivityThreshold(75);    // 62.5mg per increment   // Set inactivity // Inactivity thresholds (0-255)
+  adxl.setTimeInactivity(10);         // How many seconds of no activity is inactive?
+
+  adxl.setTapDetectionOnXYZ(0, 0, 1); // Detect taps in the directions turned ON "adxl.setTapDetectionOnX(X, Y, Z);" (1 == ON, 0 == OFF)
+ 
+  // Set values for what is considered a TAP and what is a DOUBLE TAP (0-255)
+  adxl.setTapThreshold(50);           // 62.5 mg per increment
+  adxl.setTapDuration(15);            // 625 μs per increment
+  adxl.setDoubleTapLatency(80);       // 1.25 ms per increment
+  adxl.setDoubleTapWindow(200);       // 1.25 ms per increment
+ 
+  // Set values for what is considered FREE FALL (0-255)
+  adxl.setFreeFallThreshold(7);       // (5 - 9) recommended - 62.5mg per increment
+  adxl.setFreeFallDuration(30);       // (20 - 70) recommended - 5ms per increment
+ 
+  // Setting all interupts to take place on INT1 pin
+  //adxl.setImportantInterruptMapping(1, 1, 1, 1, 1);     // Sets "adxl.setEveryInterruptMapping(single tap, double tap, free fall, activity, inactivity);" 
+                                                        // Accepts only 1 or 2 values for pins INT1 and INT2. This chooses the pin on the ADXL345 to use for Interrupts.
+                                                        // This library may have a problem using INT2 pin. Default to INT1 pin.
+  
+  // Turn on Interrupts for each mode (1 == ON, 0 == OFF)
+  adxl.InactivityINT(1);
+  adxl.ActivityINT(1);
+  adxl.FreeFallINT(1);
+  adxl.doubleTapINT(1);
+  adxl.singleTapINT(1);
+
+
   // Indicate end of boot sequence via green therometer (100%)
   #ifdef DEBUG
     Serial.println("accelerometer initalized");
@@ -104,7 +151,7 @@ void loop()
   // in future versions, read battery level
 
   //read the accelerometer
-  sensors_event_t event; 
+  /* sensors_event_t event; 
   accel.getEvent(&event);
   #ifdef DEBUG
     // Display the results (acceleration is measured in m/s^2)
@@ -112,7 +159,22 @@ void loop()
     Serial.print(" Y: "); Serial.print(event.acceleration.y);
     Serial.print(" Z: "); Serial.print(event.acceleration.z); Serial.println(" m/s^2 ");
   #endif
+  */
  
+ // Accelerometer Readings
+  int x,y,z;   
+  adxl.readAccel(&x, &y, &z);         // Read the accelerometer values and store them in variables declared above x,y,z
+
+  // Output Results to Serial
+  /* UNCOMMENT TO VIEW X Y Z ACCELEROMETER VALUES */  
+  Serial.print(x);
+  Serial.print(", ");
+  Serial.print(y);
+  Serial.print(", ");
+  Serial.println(z); 
+  
+  ADXL_ISR();
+
   // compare accel values to previous values, determine if mode switch is required
   
   /* Accelerometer events to change between modes
@@ -180,9 +242,9 @@ void staffModeNormalUpdate()
   // cycle through some animations for proto1
   stripOne.setRunFwd(CRGB::Blue);
   //stripTwo.setRunFwd(CRGB::Purple);
-  demo_loop(64,100);
+  demo_loop(32,100);
 
-  // ..or maybe counter-rotating chases
+ /*  // ..or maybe counter-rotating chases
   stripOne.setRunFwd(CRGB::Blue);
   //stripTwo.setRunRev(CRGB::Red);
   demo_loop(64,60);
@@ -196,6 +258,8 @@ void staffModeNormalUpdate()
   stripOne.setCylon(CRGB::Red);
   //stripTwo.setCylon(CRGB::Red);
   demo_loop(64,100);
+
+*/
 }
 
 void staffModeFlashlightUpdate()
@@ -234,6 +298,10 @@ void staffModeErrorUpdate()
   #endif
   // mode doesn't care about previous LED status
   // blink red for proto1
+  FastLED.setBrightness(200);
+  stripOne.setOneColor(CRGB::Red);
+  stripOne.update();
+  FastLED.show();
 }
 
 void demo_loop(int count, int delayms){
@@ -243,5 +311,47 @@ void demo_loop(int count, int delayms){
     FastLED.show();
     // We run all strips at a 100ms clock speed (10 Hz)
     delay(delayms);
+  }
+}
+
+/********************* ISR *********************/
+/* Look for Interrupts and Triggered Action    */
+void ADXL_ISR() {
+  
+  // getInterruptSource clears all triggered actions after returning value
+  // Do not call again until you need to recheck for triggered actions
+  byte interrupts = adxl.getInterruptSource();
+  
+  // Free Fall Detection
+  if(adxl.triggered(interrupts, ADXL345_FREE_FALL)){
+    Serial.println("*** FREE FALL ***");
+    //add code here to do when free fall is sensed
+  } 
+  
+  // Inactivity
+  if(adxl.triggered(interrupts, ADXL345_INACTIVITY)){
+    Serial.println("*** INACTIVITY ***");
+     //add code here to do when inactivity is sensed
+  }
+  
+  // Activity
+  if(adxl.triggered(interrupts, ADXL345_ACTIVITY)){
+    Serial.println("*** ACTIVITY ***"); 
+     //add code here to do when activity is sensed
+  }
+
+    // Tap Detection
+  if(adxl.triggered(interrupts, ADXL345_SINGLE_TAP)){
+    Serial.println("*** TAP ***");
+     //add code here to do when a tap is sensed
+    StaffMode = MODE_FLASHLIGHT;
+    delay(500);
+  } 
+  
+  // Double Tap Detection
+  if(adxl.triggered(interrupts, ADXL345_DOUBLE_TAP)){
+    Serial.println("*** DOUBLE TAP ***");
+     //add code here to do when a 2X tap is sensed
+    StaffMode = MODE_NORMAL;
   }
 }
