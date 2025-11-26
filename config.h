@@ -1,16 +1,25 @@
-// conditional compile flags
-#define DEBUG 	// Output to serial port
+/*
+  Project Name:   wizardstaff proto 1
+  Description:    public (non-secret) configuration data
+*/	
 
-#define ledStrip1DataPin  11
-#define ledStrip2DataPin  12
-#define LEDS_STRIP        17 // number of LEDs on each strip
+// Configuration Step 1: Set debug message output
+// comment out to turn off; 1 = summary, 2 = verbose
+#define DEBUG 2
+
+// Configuration Step 2: simulate WiFi and sensor hardware,
+// returning random but plausible values
+// comment out to turn off
+// #define HARDWARE_SIMULATE
+
+// Configuration variables that change rarely
+
+const uint8_t ledStrip1DataPin = 11;
+const uint8_t ledStrip2DataPin = 12;
+const uint8_t ledStripPixelCount = 17; // number of LEDs on each strip
 
 // Wizardstaff modes
-#define MODE_NORMAL     0 // rotating animations
-#define MODE_FIND       1 // find the matching wizardstaff
-#define MODE_MUSIC      2 // reacts to microphone audio
-#define MODE_FLASHLIGHT 3 // lots of light
-#define MODE_ERROR      4 // alert user to error condition
+enum staffModes {mNormal, mPair, mMusic, mFlashlight, mError};
 
-#define GPS_UPDATE_INTERVAL 30000   // milliseconds between polling for update
-#define ACCEL_UPDATE_INTERVAL 1000  // milliseconds between polling for update
+const uint32_t gpsSampleIntervalMS = 15000;
+const uint32_t accelSampleIntervalMS = 10000;
