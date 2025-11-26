@@ -25,8 +25,8 @@ LEDControl stripTwo(ledStripPixelCount,ledsTwo);
 // global variables
 uint32_t timeLastAccelSyncMS = 0;
 uint32_t timeLastGPSSyncMS = 0;
-enum staffModes staffCurrentMode = mNormal;
-uint8_t staffPreviousMode = mNormal;
+enum staffModes staffCurrentMode;
+uint8_t staffPreviousMode = mNormal; // forces change when mBoot is set
 // int prevAccelX, prevAccelY, prevAccelZ; // last accelerometer measurements
 
 void setup() 
@@ -37,28 +37,25 @@ void setup()
     debugMessage("wizardstaff p1 started",1);
   #endif
 
-  // let user know staff is powering up
-  initLEDStrips();
-  stripOne.setOneColor(CRGB::Yellow);
-  stripTwo.setOneColor(CRGB::Yellow);
-  FastLED.show();
+  ledInit();
+
+  // show user that the staff is powering up
+  staffUpdateMode(mBoot);
 
   // initialize accelorometer
   if (!accelInit())
   {
     debugMessage("Accelerometer failed to initialize",1);
-    staffCurrentMode = mError;
-    // leave the LEDs in this mode for a bit (or forever)
-    // or reboot the hardware
+    staffUpdateMode(mError);
+    deviceReset(5000);
   }
 
   // initialize GPS
   if (!gpsInit())
   {
     debugMessage("GPS failed to initialize",1);
-    staffCurrentMode = mError;
-    // leave the LEDs in this mode for a bit (or forever)
-    // or reboot the hardware
+    staffUpdateMode(mError);
+    deviceReset(5000);
   }
 }
 
@@ -78,29 +75,38 @@ void loop()
     timeLastGPSSyncMS = millis();
   }
 
-  // change or update current staff mode
-  if (staffCurrentMode!=staffPreviousMode)
+  staffUpdateMode(staffCurrentMode);
+}
+
+void staffUpdateMode(uint8_t newMode)
+{
+  // do we need to change staff mode?
+  if (newMode!=staffPreviousMode)
   {
-    debugMessage(String("Staff mode was ") + staffPreviousMode + ", now " + staffCurrentMode,1);
-    switch(staffCurrentMode)
+    debugMessage(String("Staff mode was ") + staffPreviousMode + ", now " + newMode,1);
+    switch(newMode)
     {
+      case mBoot:
+        staffModeBoot();
+        break;
       case mNormal:
-        staffUpdateNormal();
+        staffModeNormal();
         break;
       case mFlashlight:
-        staffUpdateFlashlight();
+        staffModeFlashlight();
         break;
       case mMusic:
-        staffUpdateMusic();
+        staffModeMusic();
         break;
       case mPair:
-        staffUpdatePair();
+        staffModePair();
         break;
       case mError:
-        staffUpdateError();
+        staffModeError();
         break;
     }
     staffPreviousMode = staffCurrentMode;
+    staffCurrentMode = (enum staffModes)newMode;
   }
 
   //update LED strips
@@ -110,11 +116,12 @@ void loop()
   delay(100);          // 10Hz clock for driving animations
 }
 
-void initLEDStrips()
+void ledInit()
 {
   FastLED.addLeds<WS2812B, ledStrip1DataPin, GRB>(ledsOne,ledStripPixelCount);
   FastLED.addLeds<WS2812B, ledStrip2DataPin, GRB>(ledsTwo,ledStripPixelCount);
-  debugMessage("LED strips initialized",1);
+  FastLED.setBrightness(200);
+  debugMessage("ledInit() end",2);
 }
 
 bool gpsInit()
@@ -222,9 +229,7 @@ void accelUpdate()
 {
   debugMessage("Accelerometer data updated",1);
   staffCurrentMode = mMusic;
-}
-
-// void accelUpdate()
+  // void accelUpdate()
 // {
 //   int accelX, accelY, accelZ; // Current accelerometer measurements
 
@@ -293,46 +298,74 @@ void accelUpdate()
 //   //   Serial.print(" Z: "); Serial.print(event.acceleration.z); Serial.println(" m/s^2 ");
 //   // #endif
 // }
+}
 
-
-void staffUpdateNormal()
+void staffModeBoot()
+// Description: LED patterns when wizardStaff is in boot mode
+// Parameters: NA
+// Output: NA
+// Improvement: ?
 {
-  debugMessage("MODE_NORMAL initiated",1);
-  FastLED.setBrightness(200);
+  stripOne.setOneColor(CRGB::Yellow);
+  stripTwo.setOneColor(CRGB::Yellow);
+  debugMessage("staff LEDs in BOOT mode",1);
+}
+
+void staffModeNormal()
+{
   stripOne.setOneColor(CRGB::Blue);
   stripTwo.setOneColor(CRGB::Blue);
+  debugMessage("staff LEDs in NORMAL mode",1);
 }
 
-void staffUpdateFlashlight()
+void staffModeFlashlight()
 {
-  debugMessage("MODE_FLASHLIGHT initiated",1);
-  FastLED.setBrightness(200);
   stripOne.setOneColor(CRGB::White);
   stripTwo.setOneColor(CRGB::White);
+  debugMessage("staff LEDs in FLASHLIGHT mode",1);
 }
 
-void staffUpdatePair()
+void staffModePair()
 {
-  debugMessage("MODE_PAIR initiated",1);
-  FastLED.setBrightness(200);
   stripOne.setOneColor(CRGB::Green);
   stripTwo.setOneColor(CRGB::Green);
+  debugMessage("staff LEDs in PAIR mode",1);
+
 }
 
-void staffUpdateMusic()
+void staffModeMusic()
 {
-  debugMessage("MODE_MUSIC initiated",1);
-  FastLED.setBrightness(200);
   stripOne.setBreathe(CRGB::Green);
   stripTwo.setBreathe(CRGB::Green);
+  debugMessage("staff LEDs in MUSIC mode",1);
 }
 
-void staffUpdateError()
+void staffModeError()
 {
-  debugMessage("MODE_ERROR intiatated",1);
-  FastLED.setBrightness(200);
   stripOne.setOneColor(CRGB::Red);
   stripOne.setOneColor(CRGB::Red);
+  debugMessage("staff LEDs in ERROR mode",1);
+}
+
+void deviceReset(uint16_t ledTimerMS)
+// Description: resets SAMD21 based device
+// Parameters:  
+// Output : NA (void)
+// Improvement : ?
+{
+  // allow LED visualization time to alert user
+  delay(ledTimerMS);
+
+  debugMessage("resetting wizardStaff",1);
+
+  // Disable all interrupts to prevent interruption during reset
+  __disable_irq();
+
+  delay(100);
+  NVIC_SystemReset();
+
+  // wait indefinitely to ensure the reset completes
+  while (true);
 }
 
 void debugMessage(String messageText, uint8_t verbosityLevel)
