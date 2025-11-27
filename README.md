@@ -1,30 +1,90 @@
 # Wizardstaff - Prototype 1
-## What is a wizardstaff? 
-If you've been to Burning Man or EDC with friends, you know it's hard to find people over hundreds of acres and hundreds of thousands of people. Imagine if you were carrying a staff that reacts to the music via cool LEDs, functions as the biggest flashlight you've ever owned, and most importantly, helped you find your lost soul mate. Wizardstaffs can guide their owners to each other other over many miles using GPS, 900mhz radios, and those LEDs we previously mentioned.
+last updated 27-Nov, 2025
+## Purpose 
+If you've been to Burning Man or EDC, you know it's hard to find friends when the festival has 100K+ attendees scattered over acres if not miles. Imagine carrying a staff that reacts to the music via beautiful LED patterns, functions as the biggest flashlight you've ever owned, and most importantly, helps you find your lost soul mate. Paired wizardstaffs guide their owners to each other other! Oh yeah, they are also a good totem base :)
 
-### Proto1 Purposes
-  - Explore the best way to wire LEDs for wizardstaff
-  - Explore different 5v battery options for the base
-  - Prototype to handle regularly to discover use patterns
-  - Prototype accelerometer based events and associated LED effects
+## Features
+TODO
    
 ### Software Dependencies
-@disquisitioner builds [LED Control](https://github.com/disquisitioner/Arduino/tree/master/LED%20Projects/LED_Control).
+[disquisitioner](https://github.com/disquisitioner) builds [LED Control](https://github.com/disquisitioner/Arduino/tree/master/LED%20Projects/LED_Control).
 
-### BOM (Bill of Materials)
-  - 1X: 23" PVC pipe (staff core)
-  - 1X: Adafruit LPD8086 LED strip (data and clock pins, 5V, ground), 18 LEDs (part 306)
-  - 1X: Adafruit Feather M0 RFM69HCW (part 1376)
-  - 1X: Adafruit ADXL 345 Accelerometer (part 1231)
-  - 2X: Adafruit 2 pin JST male/female connectors (part 2880)
+## BOM (Bill of Materials)
+### MCU
+[Adafruit Feather M0 RFM69HCW](https://www.adafruit.com/product/3176)
+  - 915MHz radio for inter-staff communication, see .plan
+### Sensors
+  - testing, TBD
+### LEDs
+2x WS2812b 5V LED strips
+  - 17 LEDs per strip
+  - ~ 2A max power draw
+### Buttons/Switches
+none
+  - single button might be added in P2 depending on 9DOF gesture testing in P1
+### Frame/Etc.
+  - 23" PVC pipe, aka barrel frame
   - 1X: narrow protoboard
   - wire
   - Dicor BT-1834-1 1/8" x 3/4" x 30' Butyl Seal Tape
 
-### Pinout
-see Fritzing diagram if available
+## Pinouts
+TODO
 
-### Learnings
+## Issues/Feature Requests
+See GitHub issues for issues and feature requests not covered in .plan
+
+## .plan
+### Prototype 1
+  - Controlling 2 WS2812B LED strips with independent and linked patterns (LED Control)
+  - How to attach and wire LED strips in the barrel frame
+  - How to store and wire battery (5V) in the barrel frame 
+  - Discover use patterns and usability via regular use
+  - Test 9DOF gesture recognition to change staff modes
+#### Prototype 1 exit criteria
+  - 2+ hours P1 freeform testing by three people
+  - P2 build parts on-site
+  - P2 battery solution documented
+### Prototype 2
+  - switch to 1 meter staff?
+  - Expand to 4 WS2812b LED strips
+    - if larger staff, expand to 29 LEDs/strip
+      - 20mA per LED min, 60mA max
+      - min total draw ~2.4A, max ~ 7.2A
+  - GPS integration
+  - custom power distribution board
+  - is a button needed?
+    - reset
+    - mode change, dependent on 9DOF gesture recognition testing in P1
+### Prototype 3
+  - switch to 1 meter staff if not completed in P2
+  - Transparent barrel frame
+  - LEDs inside staff via spine
+  - 915Mhz communication between staffs to guide owners to each other
+
+## Supporting Material
+Mechanical components
+- barrel
+- bottom cap 
+- battery assembly
+- spine assembly
+- brain assembly
+- top cap
+
+## Prototype 1 Learnings
+- 03-Jul, 2017
+  - Helens says the diameter is too wide
+    - look at baseball bat or lacrosse stick as guides
+      - balance is an issue
+  - want it to freed stand on floor
+  - needs a sling to carry it around for awhile
+  - attach to a water pack easily?
+  - need to leave the balance point open to carry it easily
+  - needs balanced weight
+  - telescoping?
+  - soft top to push down on
+  - hard, tough bottom to deal with the ground
+- 06-Jun, 2019
   - need to write up build process before building
   - fritzing diagrams
   - take pictures of build during process
@@ -33,44 +93,3 @@ see Fritzing diagram if available
   - need plenty of 2pin JST connectors!
   - didn't think I would need a protoboard but I do for GND routing, accelerometer. Will need a place at the top of P2 for this between the LED strips
   - ideally create a simple PCB to route 5V power, GND from base to circular 90degree endpoints around staff plus central tap for MCU
- 
-### Issues
-  - Adafruit Feather might have issues with 5V to VBUS, GND (according to Adafruit, this is not recommended?)
-  - 6/9/19: ran out of Adafruit 318/319, replaced by 2880, ordered many 318/319 for P2
-  - need to look at larger, custom 5V batteries for P2
-  - see build photos for discovered p2 issues
-
-### Questions
-
-### Information Sources
-#### LED strips
-- https://learn.adafruit.com/adafruit-neopixel-uberguide/powering-neopixels
-- https://learn.adafruit.com/battery-power-for-led-pixels-and-strips/about-batteries
-#### Accelerometer
-- https://howtomechatronics.com/tutorials/arduino/how-to-track-orientation-with-arduino-apnd-adxl345-accelerometer/
-- https://learn.sparkfun.com/tutorials/adxl345-hookup-guide/all
-- https://forums.adafruit.com/viewtopic.php?f=25&t=51029
-- https://learn.adafruit.com/adxl343-breakout-learning-guide?view=all
-##### Accelerometer via circuit python *(not used in proto1)*
-- https://learn.adafruit.com/make-it-shake-rattle-and-roll?view=all
-- https://www.analog.com/en/analog-dialogue/articles/detecting-falls-3-axis-digital-accelerometer.html
-
-### Revisions *(independent of check-ins)*
-  - 06/07/19: [FR 06/02/19] fork from lightbar.ino
-  - 06/07/19: [FR 11/24/17] implement DEBUG flag for print and println and put !Serial under that debug flag
-  - 09/03/19: Moved all P1 .plan information to this file
-    Added accelerometer basic read
-  - 09/14/19: integrated David Bryant's LEDControl library to replace lightfieldeffects
-  - 09/14/19: [FR 06/09/19] verify WS2812B ( https://www.adafruit.com/product/1376?length=1 )
-  - 09/14/19: [FR 11/20/17] enum stripColor for readability, closed due to LEDControl implemetation
-  - 12/20/19: refinement of control logic around accelerometer reads
-    
-### Feature Requests
-  - 05/07/19: error handling review
-  - 12/20/19: test accelerometer on interupt pin
-
-  ### Proto2 build gates
-  - 2+hours P1 freeform testing
-  - parts on-hand for build
-  - determination of P2 battery solution
-  - test powering Feather M0 using 5v from battery
