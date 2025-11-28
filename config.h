@@ -21,5 +21,5 @@ const uint8_t ledStripPixelCount = 17; // number of LEDs on each strip
 // Wizardstaff modes
 enum staffModes {mBoot, mNormal, mPair, mMusic, mFlashlight, mError};
 
-const uint32_t gpsSampleIntervalMS = 15000;
-const uint32_t accelSampleIntervalMS = 10000;
+const uint32_t gpsSampleIntervalMS = 90000;
+const uint32_t accelSampleIntervalMS = 600000;
