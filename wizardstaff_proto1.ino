@@ -18,9 +18,9 @@ CRGB ledsTwo[ledStripPixelCount];
 LEDControl stripOne(ledStripPixelCount,ledsOne); 
 LEDControl stripTwo(ledStripPixelCount,ledsTwo);
 
-// Instantiate accelerometer
-// Adafruit_ADXL343 accel = Adafruit_ADXL343(12345);
-// ADXL345 accel = ADXL345();
+// button support
+#include <ezButton.h>
+ezButton buttonOne(buttonPin,INPUT_PULLDOWN);
 
 // global variables
 uint32_t timeLastAccelSyncMS = 0;
@@ -40,13 +40,16 @@ void setup()
   ledInit();
 
   // show user that the staff is powering up
-  staffUpdateMode(mBoot);
+  staffChangeMode(mBoot);
+
+  buttonOne.setDebounceTime(buttonDebounceDelayMS);
+
 
   // initialize accelorometer
   if (!accelInit())
   {
     debugMessage("Accelerometer failed to initialize",1);
-    staffUpdateMode(mError);
+    staffChangeMode(mError);
     deviceReset(5000);
   }
 
@@ -54,40 +57,49 @@ void setup()
   if (!gpsInit())
   {
     debugMessage("GPS failed to initialize",1);
-    staffUpdateMode(mError);
+    staffChangeMode(mError);
     deviceReset(5000);
   }
 
-  staffUpdateMode(mNormal);
+  staffChangeMode(mNormal);
 }
 
 void loop()
 {
-  // has the staff moved in a way to trigger a change?
-  if ((millis() - timeLastAccelSyncMS) > accelSampleIntervalMS) 
+  buttonOne.loop();
+  // check if buttons were pressed
+  if (buttonOne.isReleased())
   {
-    accelUpdate();
-    timeLastAccelSyncMS = millis();
+    if (staffCurrentMode == mNormal)
+      staffChangeMode(mFlashlight);
+    else
+      staffChangeMode(mNormal);
   }
+  // // has the staff moved in a way to trigger a change?
+  // if ((millis() - timeLastAccelSyncMS) > accelSampleIntervalMS) 
+  // {
+  //   accelUpdate();
+  //   timeLastAccelSyncMS = millis();
+  // }
 
-  // is it time to update the staff's GPS position?
-  if ((millis() - timeLastGPSSyncMS) > gpsSampleIntervalMS) 
-  {
-    gpsUpdate();
-    timeLastGPSSyncMS = millis();
-  }
+  // // is it time to update the staff's GPS position?
+  // if ((millis() - timeLastGPSSyncMS) > gpsSampleIntervalMS) 
+  // {
+  //   gpsUpdate();
+  //   timeLastGPSSyncMS = millis();
+  // }
 
-  staffUpdateMode(staffCurrentMode);
+  staffChangeMode(staffCurrentMode);
 }
 
-void staffUpdateMode(uint8_t newMode)
+void staffChangeMode(uint8_t newMode)
 {
   bool modeChange = false;  
 
   // do we need to change staff mode?
   if (newMode!=staffPreviousMode)
   {
-    debugMessage(String("Staff mode was ") + staffPreviousMode + ", now " + newMode,1);
+    debugMessage(String("Staff mode was ") + staffPreviousMode + ", now " + newMode,2);
     staffPreviousMode = staffCurrentMode;
     staffCurrentMode = (enum staffModes)newMode;
     modeChange = true;
@@ -198,7 +210,7 @@ void staffModeBoot(bool modeChange)
 void staffModeNormal(bool modeChange)
 {
   static uint8_t i, level_leds, progress;
-  static uint32_t bitmap;
+  static uint32_t bitmap  = 0b1100110011001100; // marquee pattern
   static uint32_t counter = 0;
 
   if (modeChange) {
@@ -209,17 +221,46 @@ void staffModeNormal(bool modeChange)
   // Cycle through patterns, with 64 updates for each
   if( (counter % 64) == 0) {
     switch((counter/64)%7) {
-      case 0: stripOne.setRunFwd(CRGB::Purple);    break;
-      case 1: stripOne.setRunRev(CRGB::Red);       break;
-      case 2: stripOne.setRainbowRev();            break;
-      case 3: stripOne.setCylon(CRGB::Red);        break;
-      case 4: 
-        bitmap = 0b1100110011001100;  // marquee pattern
-        stripOne.setMarquee(CRGB::Yellow,bitmap); break;
-      case 5: stripOne.setOneColor(CRGB::Purple);  break;
-      case 6: stripOne.setBreathe(CRGB::Orange);  break;
-        
-      default: stripOne.setOneColor(CRGB::Orange); break;  // should never see this
+      case 0: {
+        stripOne.setRunFwd(CRGB::Purple);
+        stripTwo.setBreathe(CRGB::Orange);
+        break;
+      }
+      case 1: {
+        stripOne.setRunRev(CRGB::Red);
+        stripTwo.setRunFwd(CRGB::Purple);
+       break;
+      }
+      case 2: {
+        stripOne.setRainbowRev();
+        stripTwo.setRunRev(CRGB::Red);
+        break;
+      }
+      case 3: {
+        stripOne.setCylon(CRGB::Red);
+        stripTwo.setRainbowRev();
+        break;
+      }
+      case 4: {
+        stripOne.setMarquee(CRGB::Yellow,bitmap);
+        stripTwo.setCylon(CRGB::Red);
+        break;
+      }
+      case 5: {
+        stripOne.setOneColor(CRGB::Purple);
+        stripTwo.setMarquee(CRGB::Yellow,bitmap);
+        break;
+      }
+      case 6: {
+        stripOne.setBreathe(CRGB::Orange);
+        stripTwo.setOneColor(CRGB::Purple);
+        break;
+      }
+      default: {
+        stripOne.setOneColor(CRGB::Orange);
+        stripTwo.setOneColor(CRGB::Orange);
+        break;  // should never see this
+      }
     }
   }
   counter++;
@@ -229,7 +270,7 @@ void staffModeFlashlight(bool modeChange)
 {
   if (modeChange) {
     stripOne.setOneColor(CRGB::White);
-    stripTwo.setOneColor(CRGB::Red);
+    stripTwo.setOneColor(CRGB::White);
     debugMessage("LEDs now in FLASHLIGHT mode",1);
   }
   // otherwise no state to update

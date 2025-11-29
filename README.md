@@ -4,7 +4,11 @@ last updated 27-Nov, 2025
 If you've been to Burning Man or EDC, you know it's hard to find friends when the festival has 100K+ attendees scattered over acres if not miles. Imagine carrying a staff that reacts to the music via beautiful LED patterns, functions as the biggest flashlight you've ever owned, and most importantly, helps you find your lost soul mate. Paired wizardstaffs guide their owners to each other other! Oh yeah, they are also a good totem base :)
 
 ## Features
-TODO
+### Required
+### Nice to have
+#### Totem anchor at top of barrel
+It would be cool to be able to anchor (decorative) items to the top of the totem
+[decortive item](/readme/totem.jpg)
    
 ### Software Dependencies
 [disquisitioner](https://github.com/disquisitioner) builds [LED Control](https://github.com/disquisitioner/Arduino/tree/master/LED%20Projects/LED_Control).
@@ -23,7 +27,7 @@ TODO
 none
   - single button might be added in P2 depending on 9DOF gesture testing in P1
 ### Frame/Etc.
-  - 23" PVC pipe, aka barrel frame
+  - 23" PVC pipe, aka barrel
   - 1X: narrow protoboard
   - wire
   - Dicor BT-1834-1 1/8" x 3/4" x 30' Butyl Seal Tape
@@ -37,8 +41,8 @@ See GitHub issues for issues and feature requests not covered in .plan
 ## .plan
 ### Prototype 1
   - Controlling 2 WS2812B LED strips with independent and linked patterns (LED Control)
-  - How to attach and wire LED strips in the barrel frame
-  - How to store and wire battery (5V) in the barrel frame 
+  - How to attach and wire LED strips in the barrel
+  - How to store and wire battery (5V) in the barrel 
   - Discover use patterns and usability via regular use
   - Test 9DOF gesture recognition to change staff modes
 #### Prototype 1 exit criteria
@@ -58,7 +62,7 @@ See GitHub issues for issues and feature requests not covered in .plan
     - mode change, dependent on 9DOF gesture recognition testing in P1
 ### Prototype 3
   - switch to 1 meter staff if not completed in P2
-  - Transparent barrel frame
+  - Transparent barrel
   - LEDs inside staff via spine
   - 915Mhz communication between staffs to guide owners to each other
 
@@ -93,3 +97,10 @@ Mechanical components
   - need plenty of 2pin JST connectors!
   - didn't think I would need a protoboard but I do for GND routing, accelerometer. Will need a place at the top of P2 for this between the LED strips
   - ideally create a simple PCB to route 5V power, GND from base to circular 90degree endpoints around staff plus central tap for MCU
+
+  ## Ideas & Questions
+  - Touch capacitive button?
+  - Carrying case
+    - how were didgeridoo carried long distances?
+    - Long gun case straps as example
+    - Does the barrel need strap end points?
