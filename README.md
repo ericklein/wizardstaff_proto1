@@ -8,7 +8,7 @@ If you've been to Burning Man or EDC, you know it's hard to find friends when th
 ### Nice to have
 #### Totem anchor at top of barrel
 It would be cool to be able to anchor (decorative) items to the top of the totem
-[decortive item](/readme/totem.jpg)
+![decorative top](/readme/totem.jpg)
    
 ### Software Dependencies
 [disquisitioner](https://github.com/disquisitioner) builds [LED Control](https://github.com/disquisitioner/Arduino/tree/master/LED%20Projects/LED_Control).
